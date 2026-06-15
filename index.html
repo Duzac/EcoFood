@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoFood - Aplicativo Anti-Desperdício</title>
+    <style>
+        :root {
+            --bg-main: #121212;
+            --bg-card: #1e1e1e;
+            --bg-input: #f5f5f7;
+            --green-primary: #1b5e20;
+            --green-light: #00e676;
+            --text-white: #ffffff;
+            --text-gray: #aaaaaa;
+            --danger: #ff3b30;
+            --warning: #ffcc00;
+            --success: #34c759;
+            --accent-purple: #7b1fa2;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #eef2f3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-white);
+        }
+
+        /* Moldura de Smartphone */
+        .smartphone-container {
+            width: 375px;
+            height: 812px;
+            background-color: var(--bg-main);
+            border-radius: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            overflow: hidden;
+            position: relative;
+            border: 8px solid #000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Barra de Status */
+        .status-bar {
+            height: 44px;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 600;
+            background: #000;
+            z-index: 10;
+        }
+
+        .status-icons span {
+            margin-left: 4px;
+        }
+
+        /* Área de Conteúdo Deslizante */
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 80px;
+            position: relative;
+        }
+
+        .app-content::-webkit-scrollbar {
+            width: 0px;
+        }
+
+        /* Sistema de Telas */
+        .screen {
+            display: none;
+            padding: 20px;
+            animation: slideUp 0.25s ease-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- ESTILOS COMPARTILHADOS --- */
+        .header-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        .search-bar {
+            width: 100%;
+            background: #2c2c2e;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
+            margin-bottom: 16px;
+        }
+
+        .badge-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .badge {
+            background: #2c2c2e;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+            border: 1px solid #3a3a3c;
+            color: var(--text-gray);
+        }
+
+        .badge.active {
+            background: var(--success);
+            color: #000;
+            font-weight: bold;
+            border-color: var(--success);
+        }
+
+        .section-title {
+            font-size: 17px;
+            font-weight: bold;
+            margin: 20px 0 12px 0;
+            color: #ffffff;
+        }
+
+        /* --- TELA 1: LOGIN --- */
+        #screen-login {
+            padding: 50px 24px;
+            text-align: center;
+        }
+        .logo-box {
+            margin: 40px 0;
+        }
+        .logo-icon { font-size: 64px; color: var(--green-light); }
+        .logo-text { font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+        .logo-sub { color: var(--text-gray); font-size: 14px; margin-top: 4px; }
+        
+        .input-group {
+            text-align: left;
+            margin-bottom: 16px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #ddd;
+        }
+        .input-group input {
+            width: 100%;
+            background: var(--bg-input);
+            border: none;
+            padding: 16px;
+            border-radius: 14px;
+            color: #1c1c1e;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .pass-container { position: relative; }
+        .pass-toggle {
+            position: absolute; right: 16px; top: 50%;
+            transform: translateY(-50%); color: #8e8e93; cursor: pointer;
+        }
+        .forgot-link {
+            text-align: left; color: var(--green-light);
+            font-size: 14px; margin-bottom: 24px; cursor: pointer;
+        }
+        .btn-main {
+            width: 100%; background: var(--green-primary);
+            color: white; border: none; padding: 16px;
+            border-radius: 30px; font-size: 17px; font-weight: bold;
+            cursor: pointer; margin-bottom: 16px;
+        }
+        .or-divider { color: var(--text-gray); font-size: 13px; margin: 16px 0; }
+        .btn-oauth {
+            width: 100%; background: #2c2c2e; color: white;
+            border: 1px solid #3a3a3c; padding: 14px; border-radius: 30px;
+            margin-bottom: 10px; cursor: pointer; font-size: 15px;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+
+        /* --- TELA 2: HOME / DASHBOARD --- */
+        .home-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #142814; padding: 16px; border-radius: 16px; margin-bottom: 20px;
+        }
+        .user-profile { display: flex; align-items: center; gap: 12px; }
+        .user-avatar {
+            width: 44px; height: 44px; background: var(--warning);
+            color: #000; font-weight: bold; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; font-size: 18px;
+        }
+        .dashboard-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px;
+        }
+        .dashboard-card {
+            background: rgba(27, 94, 32, 0.2); border: 1px solid rgba(27, 94, 32, 0.5);
+            padding: 12px 8px; border-radius: 12px; text-align: center;
+        }
+        .dashboard-card h4 { font-size: 18px; color: var(--green-light); }
+        .dashboard-card p { font-size: 11px; color: #ccc; margin-top: 2px; }
+
+        /* Listas de Itens e Alertas */
+        .card-item {
+            background: var(--bg-card); border-radius: 14px;
+            padding: 14px; display: flex; align-items: center;
+            justify-content: space-between; margin-bottom: 8px;
+            border: 1px solid #2c2c2e;
+        }
+        .card-info { display: flex; align-items: center; gap: 12px; }
+        .indicator-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot-red { background: var(--danger); }
+        .dot-yellow { background: var(--warning); }
+        .dot-green { background: var(--success); }
+        
+        .item-icon-wrapper {
+            width: 42px; height: 42px; background: #2c2c2e;
+            border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 22px;
+        }
+
+        /* --- TELA 4: RECEITAS --- */
+        .recipe-box { background: var(--bg-card); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+        .recipe-box.priority { border-left: 4px solid var(--success); }
+        .recipe-top { display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .mini-tag { background: #2c2c2e; padding: 4px 8px; border-radius: 8px; font-size: 11px; margin-right: 4px; }
+        .tag-urgent { background: #e65100; color: white; }
+        .btn-recipe-action {
+            background: var(--warning); color: #000; border: none;
+            padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer;
+        }
+
+        /* --- TELA 5: LISTA DE COMPRAS --- */
+        .ai-banner {
+            background: #fff; color: #000; padding: 14px; border-radius: 16px;
+            margin-bottom: 16px; text-align: center;
+        }
+        .ai-banner h5 { color: var(--green-primary); font-size: 15px; }
+        .ai-banner p { font-size: 12px; margin-top: 2px; color: #555; }
+        .shopping-row {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #2c2c2e; padding: 12px; border-radius: 12px; margin-bottom: 8px;
+        }
+        .custom-checkbox {
+            width: 20px; height: 20px; border: 2px solid var(--success);
+            border-radius: 6px; margin-right: 12px; display: inline-block; vertical-align: middle; cursor: pointer;
+        }
+        .custom-checkbox.checked { background: var(--success); }
+        .ia-tag { background: var(--green-light); color: black; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+
+        /* --- TELA 6: DOAR --- */
+        .donation-banner {
+            text-align: center; background: #1a1a1a; border: 1px dashed #444; padding: 24px; border-radius: 16px; margin-bottom: 20px;
+        }
+        .btn-small { background: var(--success); color: black; border: none; padding: 6px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        /* --- TELA 7 & 8: CONFIGURAÇÕES --- */
+        .settings-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 4px; border-bottom: 1px solid #2c2c2e; cursor: pointer;
+        }
+        .toggle-switch {
+            position: relative; display: inline-block; width: 46px; height: 26px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider-switch {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #48484a; transition: .2s; border-radius: 26px;
+        }
+        .slider-switch:before {
+            position: absolute; content: ""; height: 20px; width: 20px;
+            left: 3px; bottom: 3px; background-color: white; transition: .2s; border-radius: 50%;
+        }
+        input:checked + .slider-switch { background-color: var(--success); }
+        input:checked + .slider-switch:before { transform: translateX(20px); }
+        .btn-out-danger {
+            width: 100%; background: transparent; color: var(--danger);
+            border: 2px solid var(--danger); padding: 14px; border-radius: 25px; font-weight: bold; margin-top: 20px; cursor: pointer;
+        }
+
+        /* --- TELA OBRIGATÓRIA 8: CAMERA / ESCANEAR --- */
+        .camera-view {
+            width: 100%; height: 320px; background: #333; border-radius: 20px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            position: relative; overflow: hidden; border: 2px dashed var(--accent-purple);
+        }
+        .scan-laser {
+            position: absolute; width: 100%; height: 4px; background: rgba(0, 230, 118, 0.7);
+            top: 20%; left: 0; animation: scanning 2s infinite ease-in-out;
+        }
+        @keyframes scanning {
+            0% { top: 10%; }
+            50% { top: 90%; }
+            100% { top: 10%; }
+        }
+
+        /* Barra de Navegação de Baixo */
+        .bottom-nav-bar {
+            position: absolute; bottom: 0; width: 100%; height: 74px;
+            background-color: #1c1c1e; border-top: 1px solid #2c2c2e;
+            display: flex; justify-content: space-around; align-items: center; z-index: 10;
+        }
+        .nav-tab {
+            display: flex; flex-direction: column; align-items: center;
+            color: var(--text-gray); font-size: 11px; cursor: pointer; flex: 1;
+        }
+        .nav-tab.active { color: var(--green-light); }
+        .nav-tab-icon { font-size: 22px; margin-bottom: 3px; }
+        
+        .center-action-btn { position: relative; top: -14px; }
+        .center-circle {
+            width: 54px; height: 54px; background: var(--accent-purple);
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-size: 24px; color: white; box-shadow: 0 4px 12px rgba(123,31,162,0.4);
+        }
+    </style>
+</head>
+<body>
+
+<div class="smartphone-container">
+    <div class="status-bar">
+        <div>9:41</div>
+        <div class="status-icons">
+            <span>📶</span> <span>🛜</span> <span>🔋</span>
+        </div>
+    </div>
+
+    <div class="app-content">
+
+        <div id="screen-login" class="screen active">
+            <div class="logo-box">
+                <div class="logo-icon">🌱</div>
+                <div class="logo-text">EcoFood</div>
+                <div class="logo-sub">Menos Desperdício, mais sabor</div>
+            </div>
+            
+            <div class="input-group">
+                <label>E-mail</label>
+                <input type="email" value="arthurmossmann03@gmail.com">
+            </div>
+            
+            <div class="input-group">
+                <label>Senha</label>
+                <div class="pass-container">
+                    <input type="password" value="******">
+                    <span class="pass-toggle">👁️</span>
+                </div>
+            </div>
+            
+            <div class="forgot-link">Esqueceu a senha?</div>
+            <button class="btn-main" onclick="changeScreen('screen-home')">Entrar</button>
+            <div class="or-divider">Ou continue com</div>
+            <button class="btn-oauth" onclick="changeScreen('screen-home')">🛑 Entrar com Google</button>
+            <button class="btn-oauth" onclick="changeScreen('screen-home')">🍏 Entrar com Apple</button>
+        </div>
+
+        <div id="screen-home" class="screen">
+            <div class="home-bar">
+                <div class="user-profile">
+                    <div class="user-avatar">A</div>
+                    <div>
+                        <div style="font-size: 13px; color: var(--text-gray);">Bem-vindo</div>
+                        <div style="font-size: 17px; font-weight: bold;">Arthur</div>
+                    </div>
+                </div>
+                <div style="font-size: 24px; cursor: pointer;" onclick="changeScreen('screen-settings')">☰</div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="dashboard-card"><h4>24</h4><p>Itens salvos</p></div>
+                <div class="dashboard-card" style="background: rgba(255,204,0,0.15); border-color: var(--warning)">
+                    <h4 style="color: var(--warning)">3</h4><p>Vencendo</p>
+                </div>
+                <div class="dashboard-card"><h4>R$ 180</h4><p>Economizados</p></div>
+            </div>
+
+            <div class="section-title">Alertas de Validade</div>
+            <div class="card-item">
+                <div class="card-info">
+                    <div class="indicator-dot dot-red"></div>
+                    <div><strong>Iogurte Natural</strong></div>
+                </div>
+                <span style="color: var(--danger); font-size: 13px; font-weight: bold;">Vence Hoje!</span>
+            </div>
+            <div class="card-item">
+                <div class="card-info">
+                    <div class="indicator-dot dot-yellow"></div>
+                    <div><strong>Espinafre Orgânico</strong></div>
+                </div>
+                <span style="color: var(--warning); font-size: 13px; font-weight: bold;">2 dias restantes</span>
+            </div>
+
+            <div class="section-title">Sugestão de Uso Imediato</div>
+            <div class="recipe-box priority" onclick="changeScreen('screen-recipes')">
+                <div class="recipe-top">
+                    <strong>Vitamina Verde Power</strong>
+                    <span style="font-size: 12px; color: var(--text-gray)">⏱️ 5 min</span>
+                </div>
+                <div style="font-size: 12px; color: var(--text-gray); margin-bottom: 8px;">Iogurte • Espinafre • Banana</div>
+                <span class="mini-tag tag-urgent">Usa 2 itens críticos</span>
+            </div>
+        </div>
+
+        <div id="screen-pantry" class="screen">
+            <div class="header-title">Minha Dispensa</div>
+            <input type="text" class="search-bar" placeholder="Buscar alimentos...">
+            <div class="badge-row">
+                <div class="badge active">Todos</div>
+                <div class="badge">Urgente</div>
+                <div class="badge">Geladeira</div>
+                <div class="badge">Dispensa Seca</div>
+            </div>
+
+            <div class="card-item">
+                <div class="card-info">
+                    <div class="item-icon-wrapper" style="border: 2px solid var(--danger)">🥛</div>
+                    <div>
+                        <strong>Iogurte Natural</strong>
+                        <div style="font-size: 12px; color: var(--text-gray)">1 pote • 200g</div>
+                    </div>
+                </div>
+                <span class="mini-tag tag-urgent">Hoje</span>
+            </div>
+            <div class="card-item">
+                <div class="card-info">
+                    <div class="item-icon-wrapper" style="border: 2px solid var(--warning)">🥬</div>
+                    <div>
+                        <strong>Espinafre</strong>
+                        <div style="font-size: 12px; color: var(--text-gray)">1 maço</div>
+                    </div>
+                </div>
+                <span class="mini-tag" style="background: var(--warning); color: #000;">2 Dias</span>
+            </div>
+        </div>
+
+        <div id="screen-recipes" class="screen">
+            <div class="header-title">Receitas Inteligentes</div>
+            <div class="badge-row">
+                <div class="badge active" style="background:#b65a00; color:white">Com Iogurte</div>
+                <div class="badge active" style="background:#b65a00; color:white">Com Espinafre</div>
+            </div>
+
+            <div class="recipe-box">
+                <div class="recipe-top">
+                    <strong>Omelete de Espinafre Especial</strong>
+                    <span>15 min</span>
+                </div>
+                <div style="color: var(--green-light); font-size: 12px; margin-bottom: 10px;">Evita desperdício de 3 itens</div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div><span class="mini-tag">Fácil</span><span class="mini-tag">Nutritivo</span></div>
+                    <button class="btn-recipe-action">Ver Passo a Passo</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-shopping" class="screen">
+            <div class="header-title">Lista de Compras</div>
+            <div class="ai-banner">
+                <h5>💡 Sugestão da IA</h5>
+                <p>Compre menos folhas essa semana. Historicamente há perdas.</p>
+            </div>
+
+            <div class="section-title">Hortifruti</div>
+            <div class="shopping-row">
+                <div>
+                    <span class="custom-checkbox checked"></span>
+                    <span>Maçã Gala</span>
+                </div>
+                <span style="color: var(--text-gray); font-size: 13px;">1 kg</span>
+            </div>
+            <div class="shopping-row">
+                <div>
+                    <span class="custom-checkbox"></span>
+                    <span>Cenoura</span>
+                </div>
+                <div>
+                    <span class="ia-tag">IA Suggested</span>
+                    <span style="color: var(--text-gray); font-size: 13px; margin-left: 6px;">500g</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-donation" class="screen">
+            <div class="header-title">Doações Coletivas</div>
+            <div class="donation-banner">
+                <span style="font-size: 32px">🤝</span>
+                <h4 style="margin-top: 10px">Alimente sua Comunidade</h4>
+                <p style="font-size: 12px; color: var(--text-gray); margin-top: 4px;">Compartilhe o excesso com vizinhos ou ONGs locais</p>
+            </div>
+
+            <div class="section-title">Seus itens disponíveis</div>
+            <div class="card-item">
+                <div class="card-info">
+                    <span>🥛</span>
+                    <div><strong>Iogurte Natural</strong><div style="font-size:11px; color: var(--text-gray)">Vence hoje</div></div>
+                </div>
+                <button class="btn-small">Anunciar Doação</button>
+            </div>
+        </div>
+
+        <div id="screen-settings" class="screen">
+            <div class="header-title">
+                <span class="back-btn" onclick="changeScreen('screen-home')">←</span>
+                Configurações
+            </div>
+            
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div class="user-avatar" style="width:64px; height:64px; margin: 0 auto 8px auto; font-size: 24px;">A</div>
+                <h4>Arthur Mossmann</h4>
+                <p style="font-size: 12px; color: var(--text-gray)">arthurmossmann03@gmail.com</p>
+            </div>
+
+            <div class="section-title">Preferências</div>
+            <div class="settings-item">
+                <span>Alertas de Notificação</span>
+                <label class="toggle-switch"><input type="checkbox" checked><span class="slider-switch"></span></label>
+            </div>
+            <div class="settings-item">
+                <span>Modo Otimizado por Inteligência Artificial</span>
+                <label class="toggle-switch"><input type="checkbox" checked><span class="slider-switch"></span></label>
+            </div>
+            <div class="settings-item" onclick="changeScreen('screen-about')">
+                <span>Sobre o EcoFood</span>
+                <span>❯</span>
+            </div>
+
+            <button class="btn-out-danger" onclick="changeScreen('screen-login')">Sair da Conta</button>
+        </div>
+
+        <div id="screen-scan" class="screen">
+            <div class="header-title">
+                <span class="back-btn" onclick="changeScreen('screen-home')">←</span>
+                Escanear Alimento
+            </div>
+            <p style="font-size: 13px; color: var(--text-gray); margin-top: -10px; margin-bottom: 16px;">
+                Aponte para o código de barras ou cupom fiscal para cadastrar as validades automaticamente.
+            </p>
+
+            <div class="camera-view">
+                <div class="scan-laser"></div>
+                <span style="font-size: 40px;">📷</span>
+                <p style="font-size: 12px; color: #aaa; margin-top: 10px;">Buscando código de barras...</p>
+            </div>
+
+            <button class="btn-main" style="background: var(--accent-purple); margin-top: 20px;" onclick="changeScreen('screen-pantry')">
+                Simular Entrada Manual
+            </button>
+        </div>
+
+    </div>
+
+    <div class="bottom-nav-bar" id="app-bottom-nav" style="display:none;">
+        <div class="nav-tab active" onclick="handleNavTab(this, 'screen-home')">
+            <span class="nav-tab-icon">🏠</span><span>Início</span>
+        </div>
+        <div class="nav-tab" onclick="handleNavTab(this, 'screen-pantry')">
+            <span class="nav-tab-icon">🗑️</span><span>Dispensa</span>
+        </div>
+        <div class="nav-tab" onclick="handleNavTab(this, 'screen-scan')">
+            <div class="center-action-btn">
+                <div class="center-circle">📷</div>
+            </div>
+        </div>
+        <div class="nav-tab" onclick="handleNavTab(this, 'screen-shopping')">
+            <span class="nav-tab-icon">🛒</span><span>Compras</span>
+        </div>
+        <div class="nav-tab" onclick="handleNavTab(this, 'screen-donation')">
+            <span class="nav-tab-icon">🤝</span><span>Doar</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Gerenciador centralizado de transição de telas
+    function changeScreen(screenId) {
+        // Remove a classe ativa de todas as telas
+        const screens = document.querySelectorAll('.screen');
+        screens.forEach(s => s.classList.remove('active'));
+
+        // Ativa a tela solicitada
+        const target = document.getElementById(screenId);
+        if (target) {
+            target.classList.add('active');
+        }
+
+        // Controla a visibilidade da barra de navegação de acordo com a tela
+        const bottomNav = document.getElementById('app-bottom-nav');
+        if (screenId === 'screen-login') {
+            bottomNav.style.display = 'none';
+        } else {
+            bottomNav.style.display = 'flex';
+        }
+
+        syncNavSelection(screenId);
+    }
+
+    // Gerencia o clique direto nas guias da barra de navegação
+    function handleNavTab(element, screenId) {
+        changeScreen(screenId);
+    }
+
+    // Sincroniza visualmente as abas ativas
+    function syncNavSelection(screenId) {
+        const tabs = document.querySelectorAll('.nav-tab');
+        tabs.forEach(t => t.classList.remove('active'));
+
+        if (screenId === 'screen-home') tabs[0].classList.add('active');
+        if (screenId === 'screen-pantry') tabs[1].classList.add('active');
+        if (screenId === 'screen-scan') tabs[2].classList.add('active');
+        if (screenId === 'screen-shopping') tabs[3].classList.add('active');
+        if (screenId === 'screen-donation') tabs[4].classList.add('active');
+    }
+
+    // Funcionalidade mockada para ligar e desligar checkboxes na lista de compras
+    document.querySelectorAll('.custom-checkbox').forEach(box => {
+        box.addEventListener('click', function() {
+            this.classList.toggle('checked');
+        });
+    });
+</script>
+
+</body>
+</html>
